@@ -1,0 +1,8 @@
+In both portfolio-optimization.py and monte-carlo-var.py, there is a "ticker" array. Improve it by implementing a method allows a user to
+select a ticker from a list of available tickers. The list will be generated using yfinance to check active tickers. There should also be
+automated suggestions when typing out certain tickers, ie. "AA" could suggest "AAPL", "MS" to "MSFT", etc.
+
+These variables should also be user changeable:
+-start_date
+-weights
+-
