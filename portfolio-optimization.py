@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 import numpy as np
 from scipy.optimize import minimize
 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 end_date = datetime.today()
 
 tickers = ['SPY', 'BND', 'GLD', 'QQQ', 'VTI']
@@ -39,7 +44,8 @@ def sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
 
 #Set the risk free rate
 from fredapi import Fred
-fred = Fred(api_key='8b0d64958f6457138a9c7e722e5c12d5')
+fred_api_key = os.getenv('FRED_API_KEY')
+fred = Fred(api_key=fred_api_key)
 ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
 
 risk_free_rate = ten_year_treasury_rate.iloc[-1]
