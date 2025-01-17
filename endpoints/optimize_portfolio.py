@@ -11,12 +11,12 @@ load_dotenv()
 
 optimize_portfolio_bp = Blueprint('optimize_portfolio', __name__)
 
-@optimize_portfolio_bp.route('/optimize-portfolio', methods=['POST'])
+@optimize_portfolio_bp.route('/api/v1/optimize-portfolio', methods=['POST'])
 def optimize_portfolio():
     data = request.json
     tickers = data.get('tickers', ['SPY', 'BND', 'GLD', 'QQQ', 'VTI'])
 
-    years = data.get('years', 30)
+    years = int(data.get('years', 30))  # Ensure years is an integer
     end_date = dt.datetime.today()
     start_date = end_date - dt.timedelta(days=years*365)
     adj_close_df = pd.DataFrame()
@@ -42,7 +42,7 @@ def optimize_portfolio():
     def sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
         return (expected_return(weights, log_returns) - risk_free_rate) / standard_deviation(weights, cov_matrix)
 
-    fred_api_key= os.getenv('FRED_API_KEY')
+    fred_api_key = os.getenv('FRED_API_KEY')
     fred = Fred(api_key=fred_api_key)
     ten_year_treasury_rate = fred.get_series_latest_release('GS10') / 100
     risk_free_rate = ten_year_treasury_rate.iloc[-1]
@@ -52,7 +52,7 @@ def optimize_portfolio():
 
     constraints = {'type': 'eq', 'fun': lambda x: np.sum(x) - 1}
     bounds = [(0, 0.5) for _ in range(len(tickers))]
-    initial_weights = np.array([1/len(tickers)] * len(tickers))
+    initial_weights = np.array([1/len(tickers)] * len(tickers), dtype=float)  # Ensure initial_weights are floats
 
     optimized_results = minimize(neg_sharpe_ratio, initial_weights, args=(log_returns, cov_matrix, risk_free_rate), method='SLSQP', constraints=constraints, bounds=bounds)
     optimal_weights = optimized_results.x

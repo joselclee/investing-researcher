@@ -7,16 +7,16 @@ from scipy.stats import norm
 
 monte_carlo_var_bp = Blueprint('monte_carlo_var', __name__)
 
-@monte_carlo_var_bp.route('/monte-carlo-var', methods=['POST'])
+@monte_carlo_var_bp.route('/api/v1/monte-carlo-var', methods=['POST'])
 def monte_carlo_var():
     data = request.json
     tickers = data.get('tickers', ['SPY', 'BND', 'GLD', 'QQQ', 'VTI'])
 
-    years = data.get('years', 15)
-    portfolio_value = data.get('portfolio_value', 1000000)
-    days = data.get('days', 5)
-    simulations = data.get('simulations', 100000)
-    confidence_interval = data.get('confidence_interval', 0.95)
+    years = int(data.get('years', 15))  # Ensure years is an integer
+    portfolio_value = float(data.get('portfolio_value', 10000))  # Ensure portfolio_value is a float
+    days = int(data.get('days', 5))  # Ensure days is an integer
+    simulations = int(data.get('simulations', 100000))  # Ensure simulations is an integer
+    confidence_interval = float(data.get('confidence_interval', 0.95))  # Ensure confidence_interval is a float
     weights = data.get('weights')
 
     endDate = dt.datetime.now()
@@ -44,9 +44,9 @@ def monte_carlo_var():
     if weights:
         if len(weights) != len(tickers):
             return jsonify({'error': 'Number of weights must match number of tickers'}), 400
-        weights = np.array(weights)
+        weights = np.array(weights, dtype=float)  # Ensure weights are floats
     else:
-        weights = np.array([1/len(tickers)] * len(tickers))
+        weights = np.array([1/len(tickers)] * len(tickers), dtype=float)  # Ensure weights are floats
 
     portfolio_expected_return = expected_return(weights, log_returns)
     portfolio_std_dev = standard_deviation(weights, cov_matrix)

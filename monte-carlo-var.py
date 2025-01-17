@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 # Define the number of years for historical data
-years = 15
+years = 30
 
 # Define the start and end dates for data download
 endDate = dt.datetime.now()
 startDate = endDate - dt.timedelta(days=years*365)
 
 # List of tickers to download data for
-tickers = ['SPY', 'BND', 'GLD', 'QQQ', 'VTI']
+tickers = ['SPY']
 
 # Initialize an empty DataFrame to store adjusted close prices
 adj_close_df = pd.DataFrame()
@@ -43,7 +43,7 @@ def standard_deviation(weights, cov_matrix):
     return np.sqrt(variance)
 
 cov_matrix = log_returns.cov()
-portfolio_value = 1000000  # Hardcoded $1,000,000 portfolio value
+portfolio_value = 10000  # Hardcoded $1,000,000 portfolio value
 weights = np.array([1/len(tickers)] * len(tickers))
 portfolio_expected_return = expected_return(weights, log_returns)
 portfolio_std_dev = standard_deviation(weights, cov_matrix)
@@ -56,7 +56,7 @@ days = 5
 def scenario_gain_loss(portfolio_value, portfolio_std_dev, z_score, days):
     return portfolio_value * portfolio_expected_return * days + portfolio_value * portfolio_std_dev * z_score * np.sqrt(days)
 
-simulations = 100000  # Number of simulations
+simulations = 1000  # Number of simulations
 scenario_return = []
 for i in range(simulations):
     z_score = random_z_score()
@@ -64,6 +64,7 @@ for i in range(simulations):
 
 confidence_interval = 0.95
 VaR = -np.percentile(scenario_return, 100 * (1 - confidence_interval))
+print(VaR)
 
 # Plot the histogram of scenario returns
 plt.hist(scenario_return, bins=50, density=True, alpha=0.6, color='g')
@@ -83,3 +84,4 @@ plt.legend()
 
 # Show the plot
 plt.show()
+print(VaR)
