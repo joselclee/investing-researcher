@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 # Define the number of years for historical data
-years = 30
+years = 10
 
 # Define the start and end dates for data download
 endDate = dt.datetime.now()
@@ -64,24 +64,24 @@ for i in range(simulations):
 
 confidence_interval = 0.95
 VaR = -np.percentile(scenario_return, 100 * (1 - confidence_interval))
-print(VaR)
+print(f"Value at Risk (95% confidence): ${VaR:,.2f}")
 
-# Plot the histogram of scenario returns
-plt.hist(scenario_return, bins=50, density=True, alpha=0.6, color='g')
 
-# Plot the VaR line
-plt.axvline(x=VaR, color='r', linestyle='--', label=f'VaR (95%): ${VaR:,.2f}')
+# # Plot the histogram of scenario returns
+# plt.hist(scenario_return, bins=50, density=True, alpha=0.6, color='g')
 
-# Plot the mean line
-mean_return = np.mean(scenario_return)
-plt.axvline(x=mean_return, color='b', linestyle='-', label=f'Mean: ${mean_return:,.2f}')
+# # Plot the VaR line
+# plt.axvline(x=VaR, color='r', linestyle='--', label=f'VaR (95%): ${VaR:,.2f}')
 
-# Add labels and title
-plt.xlabel('Scenario Gain/Loss ($)')
-plt.ylabel('Density')
-plt.title('Monte Carlo Simulation for Value at Risk')
-plt.legend()
+# # Plot the mean line
+# mean_return = np.mean(scenario_return)
+# plt.axvline(x=mean_return, color='b', linestyle='-', label=f'Mean: ${mean_return:,.2f}')
 
-# Show the plot
-plt.show()
-print(VaR)
+# # Add labels and title
+# plt.xlabel('Scenario Gain/Loss ($)')
+# plt.ylabel('Density')
+# plt.title('Monte Carlo Simulation for Value at Risk')
+# plt.legend()
+
+# # Show the plot
+# plt.show()
