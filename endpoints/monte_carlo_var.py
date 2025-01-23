@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_cors import cross_origin
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -8,6 +9,7 @@ from scipy.stats import norm
 monte_carlo_var_bp = Blueprint('monte_carlo_var', __name__)
 
 @monte_carlo_var_bp.route('/api/v1/monte-carlo-var', methods=['POST'])
+@cross_origin()
 def monte_carlo_var():
     data = request.json
     tickers = data.get('tickers', ['SPY', 'BND', 'GLD', 'QQQ', 'VTI'])

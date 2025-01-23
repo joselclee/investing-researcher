@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_cors import cross_origin
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -12,6 +13,7 @@ load_dotenv()
 optimize_portfolio_bp = Blueprint('optimize_portfolio', __name__)
 
 @optimize_portfolio_bp.route('/api/v1/optimize-portfolio', methods=['POST'])
+@cross_origin()
 def optimize_portfolio():
     data = request.json
     tickers = data.get('tickers', ['SPY', 'BND', 'GLD', 'QQQ', 'VTI'])
@@ -50,8 +52,11 @@ def optimize_portfolio():
     def neg_sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate):
         return -sharpe_ratio(weights, log_returns, cov_matrix, risk_free_rate)
 
-    constraints = {'type': 'eq', 'fun': lambda x: np.sum(x) - 1}
-    bounds = [(0, 0.5) for _ in range(len(tickers))]
+    constraints = [
+        {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},  # Sum of weights must be 1
+        {'type': 'ineq', 'fun': lambda x: x - 0.05}  # Each weight must be at least 5%
+    ]
+    bounds = [(0, 0.3) for _ in range(len(tickers))]  # Each weight can be at most 30%
     initial_weights = np.array([1/len(tickers)] * len(tickers), dtype=float)  # Ensure initial_weights are floats
 
     optimized_results = minimize(neg_sharpe_ratio, initial_weights, args=(log_returns, cov_matrix, risk_free_rate), method='SLSQP', constraints=constraints, bounds=bounds)
