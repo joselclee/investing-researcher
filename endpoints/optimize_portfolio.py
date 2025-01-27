@@ -54,9 +54,8 @@ def optimize_portfolio():
 
     constraints = [
         {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},  # Sum of weights must be 1
-        {'type': 'ineq', 'fun': lambda x: x - 0.05}  # Each weight must be at least 5%
     ]
-    bounds = [(0, 0.3) for _ in range(len(tickers))]  # Each weight can be at most 30%
+    bounds = [(0, 1) for _ in range(len(tickers))]  # Each weight can be between 0 and 1
     initial_weights = np.array([1/len(tickers)] * len(tickers), dtype=float)  # Ensure initial_weights are floats
 
     optimized_results = minimize(neg_sharpe_ratio, initial_weights, args=(log_returns, cov_matrix, risk_free_rate), method='SLSQP', constraints=constraints, bounds=bounds)
