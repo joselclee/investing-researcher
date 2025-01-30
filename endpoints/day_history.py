@@ -33,7 +33,7 @@ def day_history(user_id):
             stock_ticker = ticker['ticker']
             shares = ticker['value']
             stock_data = yf.Ticker(stock_ticker)
-            history = stock_data.history(period='1d', interval='5m')  # Fetch 5-minute interval data for the last day
+            history = stock_data.history(period='1d', interval='15m')  # Fetch 15-minute interval data for the last day
             portfolio_history[stock_ticker] = history['Close']
             weights[stock_ticker] = shares
 
