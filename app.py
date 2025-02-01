@@ -8,6 +8,7 @@ from endpoints.remove_ticker import remove_ticker_bp
 from endpoints.update_ticker_value import update_ticker_value_bp
 from endpoints.account import account_bp
 from endpoints.day_history import day_history_bp
+from endpoints.monte_carlo_optimize import monte_carlo_optimization_bp
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -21,6 +22,7 @@ app.register_blueprint(remove_ticker_bp)
 app.register_blueprint(update_ticker_value_bp)
 app.register_blueprint(account_bp)
 app.register_blueprint(day_history_bp)
+app.register_blueprint(monte_carlo_optimization_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

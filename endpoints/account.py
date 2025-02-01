@@ -3,6 +3,7 @@ from flask_cors import cross_origin
 from firebase_config import db
 import yfinance as yf
 import logging
+from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -15,23 +16,61 @@ def get_account(user_id):
         user_collection_ref = db.collection(f'portfolios_{user_id}')
         owned = None
         tickers = []
+        first_name = ""
+        last_name = ""
+        state_of_residence = ""
+        start_date = None
+        doc_id = None
         
         for doc in user_collection_ref.stream():
             doc_data = doc.to_dict()
-            tickers.extend(doc.to_dict().get('tickers', []))
+            tickers.extend(doc_data.get('tickers', []))
             owned = doc_data.get('owned', None)
+            first_name = doc_data.get('first_name', "")
+            last_name = doc_data.get('last_name', "")
+            state_of_residence = doc_data.get('state_of_residence', "")
+            start_date = doc_data.get('start_date', None)
+            doc_id = doc.id
+
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            years_owned = (datetime.today() - start_date).days // 365
+        else:
+            years_owned = 0
+
+        # Update the years_owned field in Firestore
+        if doc_id:
+            doc_ref = user_collection_ref.document(doc_id)
+            doc_ref.update({'years_owned': years_owned})
 
         total_portfolio_value = 0
+        ticker_values = {}
+
         for ticker in tickers:
             stock_ticker = ticker['ticker']
             shares = ticker['value']
             stock_data = yf.Ticker(stock_ticker)
             stock_price = stock_data.history(period='1d')['Close'].iloc[-1]
-            total_portfolio_value += shares * stock_price
+            ticker_value = shares * stock_price
+            ticker_values[stock_ticker] = ticker_value
+            total_portfolio_value += ticker_value
+
+        ticker_percentages = [{'ticker': ticker, 'percentage': (value / total_portfolio_value) * 100} for ticker, value in ticker_values.items()]
 
         logging.debug(f"Retrieved tickers for user_id {user_id}: {tickers}")
         logging.debug(f"Total portfolio value for user_id {user_id}: {total_portfolio_value}")
-        return jsonify({'tickers': tickers, 'total_portfolio_value': total_portfolio_value}), 200
+        logging.debug(f"Ticker percentages for user_id {user_id}: {ticker_percentages}")
+
+        return jsonify({
+            'tickers': tickers,
+            'total_portfolio_value': total_portfolio_value,
+            'ticker_percentages': ticker_percentages,
+            'first_name': first_name,
+            'last_name': last_name,
+            'state_of_residence': state_of_residence,
+            'years_owned': years_owned,
+            'start_date': start_date.strftime('%Y-%m-%d') if start_date else None
+        }), 200
     except Exception as e:
         logging.error(f"Error retrieving account details: {e}")
         return jsonify({'error': str(e)}), 500
@@ -40,7 +79,8 @@ def get_account(user_id):
 @cross_origin()
 def update_account(user_id):
     try:
-        data = request.jsonlogging.debug(f"Received data for updating account: {data}")
+        data = request.json
+        logging.debug(f"Received data for updating account: {data}")
         
         if not data:
             return jsonify({'error': 'No data provided'}), 400
@@ -55,6 +95,8 @@ def update_account(user_id):
         
         if doc_id:
             doc_ref = user_collection_ref.document(doc_id)
+            if 'years_owned' in data:
+                del data['years_owned']  # Remove years_owned from the data if present
             doc_ref.update(data)
             logging.debug(f"Updated account for user_id {user_id} with data {data}")
             return jsonify({'message': 'Account updated successfully'}), 200

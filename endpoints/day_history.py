@@ -46,8 +46,14 @@ def day_history(user_id):
         # Convert the index (timestamps) to strings for JSON serialization
         portfolio_performance.index = portfolio_performance.index.astype(str)
 
+        # Calculate the total portfolio value at the end of the day
+        total_portfolio_value = portfolio_performance.iloc[-1]
+
         logging.debug(f"Retrieved day history for user_id {user_id}")
-        return jsonify({'portfolio_performance': portfolio_performance.to_dict()}), 200
+        return jsonify({
+            'portfolio_performance': portfolio_performance.to_dict(),
+            'total_portfolio_value': total_portfolio_value
+        }), 200
     except Exception as e:
         logging.error(f"Error retrieving day history: {e}")
         return jsonify({'error': str(e)}), 500
